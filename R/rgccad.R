@@ -176,7 +176,7 @@ rgccad = function(blocks, connection = 1 - diag(length(blocks)),
                   tau = rep(1, length(blocks)),
                   ncomp = rep(1, length(blocks)), scheme = "centroid",
                   init = "svd", bias = TRUE, tol = 1e-08, verbose = TRUE,
-                  na.rm = TRUE, quiet = FALSE)
+                  na.rm = TRUE, quiet = FALSE, alternateCov = NULL)
 {
 
   if (mode(scheme) != "function") {
@@ -225,11 +225,13 @@ rgccad = function(blocks, connection = 1 - diag(length(blocks)),
   if (is.vector(tau))
     rgcca.result <- rgccak(blocks, connection, tau = tau, scheme = scheme,
                            init = init, bias = bias, tol = tol,
-                           verbose = verbose, na.rm = na.rm)
+                           verbose = verbose, na.rm = na.rm, 
+                           alternateCov = alternateCov)
   else
     rgcca.result <- rgccak(blocks, connection, tau = tau[1, ], scheme = scheme,
                            init = init, bias = bias, tol = tol,
-                           verbose = verbose, na.rm = na.rm)
+                           verbose = verbose, na.rm = na.rm, 
+                           alternateCov = alternateCov)
   computed_tau[1, ] = rgcca.result$tau
 
   for (b in 1:J) Y[[b]][, 1] <- rgcca.result$Y[, b, drop = FALSE]
@@ -253,11 +255,13 @@ rgccad = function(blocks, connection = 1 - diag(length(blocks)),
       if (is.vector(tau))
         rgcca.result <- rgccak(R, connection, tau = tau, scheme = scheme,
                                init = init, bias = bias, tol = tol,
-                               verbose = verbose, na.rm = na.rm)
+                               verbose = verbose, na.rm = na.rm,
+                               alternateCov = alternateCov)
       else
         rgcca.result <- rgccak(R, connection, tau = tau[n, ], scheme = scheme,
                                init = init, bias = bias, tol = tol,
-                               verbose = verbose, na.rm = na.rm)
+                               verbose = verbose, na.rm = na.rm,
+                               alternateCov = alternateCov)
       computed_tau[n, ] = rgcca.result$tau
 
       AVE_inner[n] <- rgcca.result$AVE_inner
@@ -277,9 +281,10 @@ rgccad = function(blocks, connection = 1 - diag(length(blocks)),
     colnames(Y[[b]]) = paste0("comp", 1:max(ncomp))
   }
 
+  # browser()
   for (j in 1:J) AVE_X[[j]] = apply(
     cor(blocks[[j]], Y[[j]], use = "pairwise.complete.obs")^2, 2, mean)
-
+  # browser()
   outer = matrix(unlist(AVE_X), nrow = max(ncomp))
 
   for (j in 1:max(ncomp))

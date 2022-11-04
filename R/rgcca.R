@@ -191,8 +191,8 @@ rgcca <- function(blocks, method = "rgcca",
                   sparsity = rep(1, length(blocks)),
                   init = "svd", bias = TRUE, tol = 1e-08,
                   response = NULL, superblock = FALSE,
-                  NA_method = "nipals", verbose = FALSE, quiet = TRUE){
-
+                  NA_method = "nipals", verbose = FALSE, 
+                  quiet = TRUE, alternateCov=NULL) {
     if(is(blocks, "permutation")) {
         message("All the parameters were imported from the fitted rgcca_permutation object.")
         scale_block = blocks$call$scale_block
@@ -354,6 +354,9 @@ rgcca <- function(blocks, method = "rgcca",
     if (warn_on && !quiet)
         message("Analysis in progress ...")
 
+    # gcca function comes from above
+    # if method is in "sgcca", "spca", "spls", use sgcca
+    # else, use rgccad
     func <- quote(
         gcca(
             blocks = opt$blocks,
@@ -365,7 +368,8 @@ rgcca <- function(blocks, method = "rgcca",
             bias = bias,
             tol = tol,
             quiet = quiet,
-            na.rm = na.rm
+            na.rm = na.rm,
+            alternateCov = alternateCov
         )
     )
 
