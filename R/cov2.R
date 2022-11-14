@@ -14,6 +14,7 @@
 
 cov2 = function (x, y = NULL, bias = TRUE, alternateCov = NULL)
 {
+  n = NROW(x)
   options = c("mcd", "cellwise", "mve")
 
   stopifnot(alternateCov %in% options)
