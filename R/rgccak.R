@@ -51,7 +51,8 @@
 #' @importFrom Deriv Deriv
 
 rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
-                 init = "svd", bias = TRUE, tol = 1e-08, na.rm = TRUE)
+                 init = "svd", bias = TRUE, tol = 1e-08, na.rm = TRUE,
+                 alternateCov = NULL)
 {
 
   if(mode(scheme) != "function")
@@ -75,7 +76,10 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
     a <- alpha <- M <- Minv <- K <- list()
 
     # Test for primal or dual for each block
+    # Returns the indices of blocks that have more individuals than variables
     which.primal <- which((n >= pjs) == 1)
+    # Returns the indices of blocks that have more variables than individuals
+    # (dimensionality)
     which.dual <- which((n < pjs) == 1)
 
     # Initialisation by SVD
@@ -100,6 +104,7 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
     else {
         stop_rgcca("init should be either random or by SVD.")
     }
+
 
     N = ifelse(bias, n, n - 1)
 
@@ -140,8 +145,8 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
             Y[, j] = pm(A[[j]], a[[j]], na.rm=na.rm)
         })
     }
-
-    crit_old <- sum(C * g(cov2(Y, bias = bias)))
+    
+    crit_old <- sum(C * g(cov2(Y, bias = bias, alternateCov = alternateCov)))
     iter = 1
     crit = numeric()
     Z = matrix(0, NROW(A[[1]]), J)
@@ -151,9 +156,10 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
 
     repeat
     {
-       for (j in which.primal)
+      for (j in which.primal)
       {
-         dgx = dg(cov2(Y[, j], Y, bias = bias))
+         dgx = dg(cov2(Y[, j], Y, bias = bias, alternateCov = alternateCov))
+
          if(tau[j] == 1)
           {
            Z[, j] = rowSums(matrix(rep(C[j, ], n), n, J, byrow = TRUE)*
@@ -177,7 +183,7 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
 
       for (j in which.dual)
       {
-          dgx = dg(cov2(Y[, j], Y, bias = bias))
+          dgx = dg(cov2(Y[, j], Y, bias = bias, alternateCov = alternateCov))
           ifelse(tau[j] == 1,
             {
               Z[, j] = rowSums(matrix(rep(C[j, ], n), n, J, byrow = TRUE)*
@@ -199,7 +205,7 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
           })
       }
 
-      crit[iter] <- sum(C * g(cov2(Y, bias = bias)))
+      crit[iter] <- sum(C * g(cov2(Y, bias = bias, alternateCov = alternateCov)))
       if (verbose & (iter%%1) == 0)
       {
           cat(" Iter: ", formatC(iter, width = 3, format = "d"),
@@ -218,6 +224,7 @@ rgccak=function (A, C, tau = "optimal", scheme = "centroid", verbose = FALSE,
       a_old <- a
       iter <- iter + 1
     }
+    
     if (iter > 1000)
         warning("The RGCCA algorithm did not converge after 1000 iterations.")
     if (iter < 1000 & verbose)

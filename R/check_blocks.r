@@ -53,7 +53,7 @@ check_blocks <- function(blocks, init = FALSE, n = 2,
                               return(x)
                               }
                             )
-            message("Missing rownames are automatically labeled.")
+            if (!quiet) {message("Missing rownames are automatically labeled.")}
         }
         else
             stop_rgcca("Blocks should have rownames.")
@@ -84,7 +84,7 @@ check_blocks <- function(blocks, init = FALSE, n = 2,
     
     if (any(sapply(blocks, function(x) is.null(colnames(x)))))
     {
-      message("Missing colnames are automatically labeled.")
+      if (!quiet) {message("Missing colnames are automatically labeled.")}
       blocks1 = lapply(seq_along(blocks),
                        function(x){
                          if(is.null(colnames(blocks[[x]]))){

@@ -137,7 +137,8 @@ sgcca <- function(blocks, connection = 1 - diag(length(blocks)),
                   sparsity = rep(1, length(blocks)),
                   ncomp = rep(1, length(blocks)), scheme = "centroid",
                   init = "svd", bias = TRUE, tol = .Machine$double.eps,
-                  verbose = FALSE,   quiet = FALSE, na.rm = TRUE){
+                  verbose = FALSE,   quiet = FALSE, na.rm = TRUE,
+                  alternateCov = NULL){
 
   # ndefl number of deflation per block
   ndefl <- ncomp - 1
@@ -173,12 +174,12 @@ sgcca <- function(blocks, connection = 1 - diag(length(blocks)),
     sgcca.result <- sgccak(blocks, connection, sparsity = sparsity,
                            scheme = scheme, init = init, bias = bias,
                            tol = tol, verbose = verbose, quiet = quiet,
-                           na.rm = na.rm)
+                           na.rm = na.rm, alternateCov = alternateCov)
   } else {
     sgcca.result <- sgccak(blocks, connection, sparsity = sparsity[1, ],
                            scheme = scheme, init = init, bias = bias,
                            tol = tol, verbose = verbose, quiet = quiet,
-                           na.rm = na.rm)
+                           na.rm = na.rm, alternateCov = alternateCov)
   }
 
   for (b in 1:J) Y[[b]][, 1] <- sgcca.result$Y[, b, drop = FALSE]
@@ -208,12 +209,12 @@ sgcca <- function(blocks, connection = 1 - diag(length(blocks)),
         sgcca.result <- sgccak(R, connection, sparsity = sparsity,
                                scheme = scheme, init = init, bias = bias,
                                tol = tol, verbose = verbose, quiet = quiet,
-                               na.rm = na.rm)
+                               na.rm = na.rm, alternateCov = alternateCov)
       } else {
         sgcca.result <- sgccak(R, connection, sparsity = sparsity[n, ],
                                scheme = scheme, init = init, bias = bias,
                                tol = tol, verbose = verbose, quiet = quiet,
-                               na.rm = na.rm)
+                               na.rm = na.rm, alternateCov = alternateCov)
       }
 
       AVE_inner[n] <- sgcca.result$AVE_inner

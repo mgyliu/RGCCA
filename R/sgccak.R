@@ -22,7 +22,7 @@
 sgccak <-  function(A, C, sparsity = rep(1, length(A)), scheme = "centroid",
                     tol = .Machine$double.eps,
                     init = "svd", bias = TRUE, verbose = TRUE,
-                    quiet = FALSE, na.rm = TRUE){
+                    quiet = FALSE, na.rm = TRUE, alternateCov = NULL){
 
   J <- length(A)
   pjs = sapply(A, NCOL)
@@ -60,9 +60,9 @@ sgccak <-  function(A, C, sparsity = rep(1, length(A)), scheme = "centroid",
                                   horst = x,
                                   factorial = x**2,
                                   centroid = abs(x))
-          crit_old <- sum(C*g(cov2(Y, bias = bias)))
+          crit_old <- sum(C*g(cov2(Y, bias = bias, alternateCov = alternateCov)))
           },
-         crit_old <- sum(C*scheme(cov2(Y, bias = bias)))
+         crit_old <- sum(C*scheme(cov2(Y, bias = bias, alternateCov = alternateCov)))
   )
 
   if (mode(scheme) == "function")
@@ -73,7 +73,7 @@ sgccak <-  function(A, C, sparsity = rep(1, length(A)), scheme = "centroid",
       for (q in 1:J){
 
         if (mode(scheme) == "function") {
-          dgx = dg(cov2(Y[, q], Y, bias = bias))
+          dgx = dg(cov2(Y[, q], Y, bias = bias, alternateCov = alternateCov))
           CbyCovq = C[q, ]*dgx
         }
 
@@ -81,9 +81,9 @@ sgccak <-  function(A, C, sparsity = rep(1, length(A)), scheme = "centroid",
           if (scheme == "horst")
             CbyCovq <- C[q, ]
           if (scheme == "factorial")
-            CbyCovq <- C[q, ]*2*cov2(Y, Y[, q], bias = bias)
+            CbyCovq <- C[q, ]*2*cov2(Y, Y[, q], bias = bias, alternateCov = alternateCov)
           if (scheme == "centroid")
-            CbyCovq <- C[q, ]*sign(cov2(Y, Y[,q], bias = bias))
+            CbyCovq <- C[q, ]*sign(cov2(Y, Y[,q], bias = bias, alternateCov = alternateCov))
         }
 
         Z[, q] <- rowSums(mapply("*", CbyCovq,as.data.frame(Y)))
@@ -98,9 +98,9 @@ sgccak <-  function(A, C, sparsity = rep(1, length(A)), scheme = "centroid",
                                     horst = x,
                                     factorial = x**2,
                                     centroid = abs(x))
-            crit[iter] <- sum(C*g(cov2(Y, bias = bias)))
+            crit[iter] <- sum(C*g(cov2(Y, bias = bias, alternateCov = alternateCov)))
             },
-           crit[iter] <- sum(C*scheme(cov2(Y, bias = bias)))
+           crit[iter] <- sum(C*scheme(cov2(Y, bias = bias, alternateCov = alternateCov)))
     )
 
     # Print out intermediate fit
